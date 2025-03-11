@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Farming 3D Game</title>
+
+    <style>
+
+        body { margin: 0; overflow: hidden; }
+
+        canvas { display: block; }
+
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+</head>
+
+<body>
+
+
+<script>
+
+// game.js content goes here
+
+
+let scene, camera, renderer, player, materials = { wood: 0, stone: 0 };
+
+let resources = [];
+
+
+function init() {
+
+    // Set up the scene
+
+    scene = new THREE.Scene();
+
+
+    // Set up the camera
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    camera.position.z = 5;
+
+
+    // Set up the renderer
+
+    renderer = new THREE.WebGLRenderer();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    document.body.appendChild(renderer.domElement);
+
+
+    // Add lighting to the scene
+
+    const light = new THREE.AmbientLight(0x404040);
+
+    scene.add(light);
+
+
+    // Add a simple player (cube for now)
+
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+    player = new THREE.Mesh(geometry, material);
+
+    scene.add(player);
+
+
+    // Add resources to the scene
+
+    resources.push(createResource(2, 0, 0, 'wood'));
+
+    resources.push(createResource(-2, 0, 0, 'stone'));
+
+
+    // Call the update function
+
+    animate();
+
+}
+
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    update();
+
+    renderer.render(scene, camera);
+
+}
+
+
+// Adding some resource cubes (wood and stone)
+
+function createResource(x, y, z, type) {
+
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+    let material;
+
+    if (type === 'wood') {
+
+        material = new THREE.MeshBasicMaterial({ color: 0x8B4513 });  // Brown color for wood
+
+    } else if (type === 'stone') {
+
+        material = new THREE.MeshBasicMaterial({ color: 0x808080 });  // Gray color for stone
+
+    }
+
+    const resource = new THREE.Mesh(geometry, material);
+
+    resource.position.set(x, y, z);
+
+    resource.type = type;  // Mark the type of resource
+
+    scene.add(resource);
+
+    return resource;
+
+}
+
+
+// Player movement
+
+let playerSpeed = 0.1;
+
+let moveForward = false;
+
+let moveBackward = false;
+
+let moveLeft = false;
+
+let moveRight = false;
+
+
+document.addEventListener('keydown', (e) => {
+
+    if (e.key === 'w') moveForward = true;
+
+    if (e.key === 's') moveBackward = true;
+
+    if (e.key === 'a') moveLeft = true;
+
+    if (e.key === 'd') moveRight = true;
+
+});
+
+
+document.addEventListener('keyup', (e) => {
+
+    if (e.key === 'w') moveForward = false;
+
+    if (e.key === 's') moveBackward = false;
+
+    if (e.key === 'a') moveLeft = false;
+
+    if (e.key === 'd') moveRight = false;
+
+});
+
+
+// Resource collection logic
+
+function checkForResourceCollection() {
+
+    resources.forEach((resource, index) => {
+
+        const distance = player.position.distanceTo(resource.position);
+
+        if (distance < 1.5) {
+
+            if (resource.type === 'wood') {
+
+                materials.wood++;
+
+            } else if (resource.type === 'stone') {
+
+                materials.stone++;
+
+            }
+
+            console.log(`Wood: ${materials.wood}, Stone: ${materials.stone}`);
+
+            scene.remove(resource); // Remove the resource after collection
+
+            resources.splice(index, 1); // Remove resource from the resources array
+
+        }
+
+    });
+
+}
+
+
+// Update player movement
+
+function update() {
+
+    if (moveForward) player.position.z -= playerSpeed;
+
+    if (moveBackward) player.position.z += playerSpeed;
+
+    if (moveLeft) player.position.x -= playerSpeed;
+
+    if (moveRight) player.position.x += playerSpeed;
+
+
+    checkForResourceCollection();
+
+}
+
+
+// Build a house if the player has enough materials
+
+function buildHouse() {
+
+    if (materials.wood >= 5 && materials.stone >= 3) {
+
+        // Create a simple house structure using cubes
+
+        const houseMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+
+        const houseGeometry = new THREE.BoxGeometry(2, 2, 2);
+
+        const house = new THREE.Mesh(houseGeometry, houseMaterial);
+
+        house.position.set(0, 1, 5);
+
+        scene.add(house);
+
+        console.log('House built!');
+
+    } else {
+
+        console.log('Not enough materials to build a house.');
+
+    }
+
+}
+
+
+document.addEventListener('keydown', (e) => {
+
+    if (e.key === 'b') {
+
+        buildHouse();
+
+    }
+
+});
+
+
+// Initialize the game
+
+init();
+
+
+</script>
+
+
+</body>
+
+</html>
+
+
+

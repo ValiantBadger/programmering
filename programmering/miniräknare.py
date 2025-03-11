@@ -14,3 +14,4 @@ print("Välkommen til miniräknaren")
 x =int(input ())
 print ("ett till tal")
 y =int(input ())
+
